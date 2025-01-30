@@ -1,0 +1,29 @@
+---
+- name: Proxy server with access to yggdrasil, i2p, tor
+  hosts: proxy
+  gather_facts: true
+  become: true
+  #become_user: root
+
+  roles: 
+    - role: common
+      tags:
+        - always
+    - role: yggdrasil
+      tags: 
+        - always
+    - role: i2pd
+      tags:
+        - always
+    - role: tor
+      tags: 
+        - always
+    - role: tinyproxy
+      tags:
+        - always
+    - role: iptables
+      tags:
+        - always
+
+
+...

@@ -1,0 +1,26 @@
+User tinyproxy
+Group tinyproxy
+
+Port 8888
+
+Listen {{ ansible_facts.tun0.ipv6[0].address }}
+
+Timeout 600
+
+DefaultErrorFile "/usr/share/tinyproxy/default.html"
+StatFile "/usr/share/tinyproxy/stats.html"
+LogFile "/var/log/tinyproxy/tinyproxy.log"
+LogLevel Info
+PidFile "/run/tinyproxy/tinyproxy.pid"
+
+upstream http 127.0.0.1:4444 ".i2p"
+upstream socks5 127.0.0.1:9050 ".onion"
+
+MaxClients 300
+
+{% for ip in allow_ip %}
+Allow {{ ip }}
+{% endfor %}
+
+ViaProxyName "tinyproxy"
+

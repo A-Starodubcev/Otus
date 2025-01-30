@@ -1,0 +1,20 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Update cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: ansible_pkg_mgr == "debian"
+
+- name: Enable yggdrasil
+  ansible.builtin.service:
+    service: yggdrasil
+    state: started
+    enabled: true
+
+- name: Restart yggdrasil
+  ansible.builtin.service:
+    service: yggdrasil
+    state: restarted
+...
+

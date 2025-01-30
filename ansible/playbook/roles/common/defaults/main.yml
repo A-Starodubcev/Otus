@@ -1,0 +1,7 @@
+---
+additional_packages:
+  - dirmngr
+  - apt-transport-https
+  - wget
+
+...

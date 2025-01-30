@@ -1,0 +1,26 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Collect only facts returned by facter
+  ansible.builtin.setup:
+#
+#- name: Print all available facts
+#  ansible.builtin.debug:
+#    var: ansible_facts
+
+- name: Install tinyproxy
+  apt:
+    name: tinyproxy
+    state: latest
+    
+
+#- name: Remove tinyproxy config
+#  ansible.builtin.file:
+#    path: /etc/tinyproxy/tinyproxy.conf
+#    state: absent
+
+- name: Create tinyproxy config
+  ansible.builtin.template:
+    src: tinyproxy.conf.j2
+    dest: /etc/tinyproxy/tinyproxy.conf
+  notify: restart service
+...

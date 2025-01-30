@@ -1,0 +1,43 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Creates directory for GPG keys
+  ansible.builtin.file:
+    path: /usr/local/apt-keys
+    state: directory
+    
+
+- name: Add GPG yggdrasil pub key
+  ansible.builtin.apt_key:
+    id: BC1BF63BD10B8F1A
+    url: https://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/key.txt
+    keyring: /usr/local/apt-keys/yggdrasil-keyring.gpg
+    state: present
+
+
+- name: Add the yggdrasil repository into sources list
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/local/apt-keys/yggdrasil-keyring.gpg] http://neilalexander.s3.dualstack.eu-west-2.amazonaws.com/deb/ debian yggdrasil"
+    state: present
+  notify: Update cache
+
+
+- name: install yggdrasil
+  ansible.builtin.apt:
+    pkg:
+      - yggdrasil
+    state: latest
+  notify: Enable yggdrasil
+
+    
+- name: Add peers to yggdrasil.conf
+  ansible.builtin.lineinfile:
+    path: /etc/yggdrasil/yggdrasil.conf
+    regexp: '\s+Peers\:\s\[\]'
+    line: "  Peers: [\n\t{% for peer in peers %}
+    \n\t{{ peer }}
+    {% endfor %}
+    \n  ]"
+    state: present
+    backrefs: true
+  notify: Restart yggdrasil
+...

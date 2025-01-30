@@ -1,0 +1,14 @@
+---
+- name: install yggdrasil
+  ansible.builtin.apt:
+    pkg:
+      - tor
+    state: latest
+  notify: enable service
+
+- name: Create tinyproxy config
+  ansible.builtin.template:
+    src: torsocks.conf
+    dest: /etc/tor/torsocks.conf
+  notify: restart service
+...

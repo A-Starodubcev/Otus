@@ -1,0 +1,14 @@
+---
+
+- name: update and upgrade packages
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    upgrade: safe
+
+- name: installing additional packages
+  ansible.builtin.apt:
+    pkg: "{{ additional_packages }}"
+    state: present
+
+...

@@ -1,0 +1,32 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: add GPG i2pd pub key
+  ansible.builtin.apt_key:
+    id: 66F6C87B98EBCFE2
+    url: https://repo.i2pd.xyz/r4sas.gpg
+    keyring: /usr/share/keyrings/purplei2p.gpg
+    state: present
+
+#- name: get distribution release
+#  ansible.builtin.setup:
+#    filter:
+#      - ansible_distribution_release
+
+
+- name: add the i2pd repository into sources list
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/purplei2p.gpg] https://repo.i2pd.xyz/debian {{ ansible_distribution_release }} main"
+    state: present
+  notify: update cache
+
+
+- name: install i2pd
+  apt:
+    name: i2pd
+    state: latest
+
+- name: restart service
+  ansible.builtin.systemd_service:
+    service: i2pd
+    state: started
+...
