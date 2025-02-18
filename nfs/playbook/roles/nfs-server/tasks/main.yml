@@ -1,0 +1,57 @@
+---
+- name: Collect only facts returned by facter
+  ansible.builtin.setup:
+
+- name: Install nfs-kernel-server
+  ansible.builtin.apt:
+    name: nfs-kernel-server
+    update_cache: yes
+    state: present
+  when: inventory_hostname == 'server'
+
+- name: Install nfs-common
+  ansible.builtin.apt:
+    name: nfs-common
+    update_cache: yes
+    state: present
+  when: inventory_hostname == 'client'
+
+- name: Create directory
+  ansible.builtin.file:
+    path: /srv/share/upload
+    owner: nobody
+    group: nogroup
+    mode: '0777'
+    state: directory
+  when: inventory_hostname == 'server'
+
+- name: Remove exports
+  ansible.builtin.file:
+    path: /etc/exports
+    state: absent
+  when: inventory_hostname == 'server'
+
+- name: Create create new exports
+  ansible.builtin.template:
+    src: exports.j2
+    dest: /etc/exports
+  when: inventory_hostname == 'server'
+
+- name: Add string to fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    line: "{{hostvars['server']['ansible_default_ipv4']['address']}}:/srv/share/ /mnt nfs vers=3,noauto,x-systemd.automount 0 0"
+  when: inventory_hostname == 'client'
+
+- name: NFS apply change configrue
+  ansible.builtin.shell: exportfs -r
+  when: inventory_hostname == 'server'
+
+- name: Restart client nfs service
+  ansible.builtin.systemd_service:
+    state: restarted
+    daemon_reload: true
+    name: remote-fs.target
+  when: inventory_hostname == 'client'
+
+...

@@ -1,0 +1,15 @@
+---
+- name: Install nfs for server and client
+  hosts: 
+    - server
+    - client
+  gather_facts: true
+  become: true
+  #become_user: root
+
+  roles: 
+    - role: nfs-server
+      tags: 
+        - always
+
+...
