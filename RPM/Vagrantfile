@@ -1,0 +1,74 @@
+# Describe VMs
+MACHINES = {
+  # VM name "kernel update"
+  :"rpm" => {
+              # VM box
+              :box_name => "centos/7",
+              # VM CPU count
+              :cpus => 2,
+              # VM RAM size (Mb)
+              :memory => 4096,
+              # networks
+              :net => [],
+              # forwarded ports
+              :forwarded_port => []
+            }
+}
+
+Vagrant.configure("2") do |config|
+  MACHINES.each do |boxname, boxconfig|
+    # Apply VM config
+    config.vm.define boxname do |box|
+      # Set VM base box and hostname
+      box.vm.box = boxconfig[:box_name]
+      box.vm.host_name = boxname.to_s
+      # Additional network config if present
+      if boxconfig.key?(:net)
+        boxconfig[:net].each do |ipconf|
+          box.vm.network "private_network", ipconf
+        end
+      end
+      # Port-forward config if present
+      if boxconfig.key?(:forwarded_port)
+        boxconfig[:forwarded_port].each do |port|
+          box.vm.network "forwarded_port", port
+        end
+      end
+      # VM resources config
+      box.vm.provider "virtualbox" do |v|
+        # Set VM RAM size and CPU count
+        v.memory = boxconfig[:memory]
+        v.cpus = boxconfig[:cpus]
+      end
+      box.vm.provision "shell", privileged: false, inline: <<-SHELL
+         sudo yum groupinstall -y "Development Tools"
+         sudo yum -y install rpm-build wget epel-release glibc-static tree wget createrepo expat-devel rpmdevtools libuuid-devel 
+         mkdir -p ~/rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+         cd ~/rpmbuild/SOURCES
+         wget --no-check-certificate  https://dlcdn.apache.org/httpd/httpd-2.4.53.tar.bz2
+         wget --no-check-certificate https://dlcdn.apache.org//apr/apr-1.7.0.tar.bz2
+         rpmbuild -tb apr-1.7.0.tar.bz2
+         sudo yum localinstall -y ~/rpmbuild/RPMS/x86_64/apr*.rpm
+         rpmbuild -tb httpd-2.4.53.tar.bz2
+         sudo yum-builddep -y ~/rpmbuild/SPECS/httpd.spec
+         rpmbuild -bb ~/rpmbuild/SPECS/httpd.spec
+         sudo yum install -y nginx
+         sudo mkdir -p /usr/share/nginx/html/repo
+         sudo cp ~/rpmbuild/RPMS/x86_64/*.rpm /usr/share/nginx/html/repo
+         sudo createrepo /usr/share/nginx/html/repo
+         cd ~
+         echo "index index.html index.htm;
+autoindex on;" >> autoindex.conf 
+         sudo chown root:root autoindex.conf
+         sudo chmod 644 autoindex.conf
+         sudo mv autoindex.conf /etc/nginx/default.d/autoindex.conf
+         sudo service nginx start
+         sudo nginx -c /etc/nginx/nginx.conf
+         sudo nginx -t
+         sudo nginx -s reload
+         curl -a http://localhost/repo/
+  	  SHELL
+    end
+  end
+end
+
