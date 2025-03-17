@@ -1,0 +1,11 @@
+---
+- name: systemd homework
+  hosts: proxy
+  gather_facts: true
+  become: true
+  #become_user: root
+
+  roles: 
+    - role: nginx
+      tags:
+        - always

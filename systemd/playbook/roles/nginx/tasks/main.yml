@@ -1,0 +1,75 @@
+#SPDX-License-Identifier: MIT-0
+---
+- name: Collect only facts returned by facter
+  ansible.builtin.setup:
+
+- name: update and upgrade packages
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+    upgrade: safe
+
+- name: installing additional packages
+  ansible.builtin.apt:
+    pkg: "{{ additional_packages }}"
+    state: present
+
+
+#- name: Remove tinyproxy config
+#  ansible.builtin.file:
+#    path: /etc/tinyproxy/tinyproxy.conf
+#    state: absent
+- name: Creates directory for GPG keys
+  ansible.builtin.file:
+    path: /etc/spawn-fcgi
+    state: directory
+
+
+- name: Add some files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: 'watchlog', dest: '/etc/default/watchlog' }
+    - { src: 'watchlog.sh', dest: '/opt/watchlog.sh' }
+    - { src: 'watchlog.log', dest: '/var/log/watchlog.log' }
+    - { src: 'watchlog.service', dest: '/etc/systemd/system/watchlog.service' }
+    - { src: 'watchlog.timer', dest: '/etc/systemd/system/watchlog.timer' }
+    - { src: 'fcgi.conf', dest: '/etc/spawn-fcgi/fcgi.conf' }
+    - { src: 'spawn-fcgi.service', dest: '/etc/systemd/system/spawn-fcgi.service' }
+    - { src: 'nginx@.service', dest: '/etc/systemd/system/nginx@.service' }
+    - { src: 'nginx-first.conf', dest: '/etc/nginx/nginx-first.conf' }
+    - { src: 'nginx-second.conf', dest: '/etc/nginx/nginx-second.conf' }
+
+- name: Change file mode
+  ansible.builtin.file:
+    path: /opt/watchlog.sh
+    state: file
+    mode: u+rwx,g+x,o+x
+    
+- name: Start watchlog.service
+  ansible.builtin.systemd_service:
+    state: started
+    name: watchlog.service
+
+- name: Start watchlog.timer
+  ansible.builtin.systemd_service:
+    state: started
+    name: watchlog.timer
+    
+
+- name: Start spawn-fcgi
+  ansible.builtin.systemd_service:
+    state: started
+    name: spawn-fcgi
+
+- name: Start nginx@first
+  ansible.builtin.systemd_service:
+    state: started
+    name: nginx@first
+
+- name: Start nginx@second
+  ansible.builtin.systemd_service:
+    state: started
+    name: nginx@second
+...
