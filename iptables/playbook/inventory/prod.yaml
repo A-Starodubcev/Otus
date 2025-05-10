@@ -1,0 +1,29 @@
+---
+all:
+  hosts:
+    inetRouter:
+      ansible_host: 192.168.50.31
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: /home/rod/Linux/otus/19/.vagrant/machines/inetRouter/virtualbox/private_key
+    centralRouter:
+      ansible_host: 192.168.50.33
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: /home/rod/Linux/otus/19/.vagrant/machines/centralRouter/virtualbox/private_key
+    inetRouter2:
+      ansible_host: 192.168.50.32
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: /home/rod/Linux/otus/19/.vagrant/machines/inetRouter2/virtualbox/private_key
+    centralServer:
+      ansible_host: 192.168.50.34
+      ansible_user: vagrant
+      ansible_ssh_private_key_file: /home/rod/Linux/otus/19/.vagrant/machines/centralServer/virtualbox/private_key
+  children:
+    routers:
+      hosts:
+        inetRouter:
+    debian_vm:
+      hosts:
+        centralRouter:
+        inetRouter:
+        inetRouter2:
+

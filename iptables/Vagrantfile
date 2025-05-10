@@ -1,0 +1,83 @@
+# -*- mode: ruby -*-
+# vim: set ft=ruby :
+
+MACHINES = {
+:inetRouter => {
+  :box_name => "debian/bullseye64",
+        :net => [
+                    {ip: '192.168.255.1', adapter: 2, netmask: "255.255.255.252", virtualbox__intnet: "router-net"},
+                    {ip: '192.168.50.31', adapter: 8}
+                ]
+  },
+  :inetRouter2 => {
+        :box_name => "debian/bullseye64",
+        :net => [
+                    {ip: '192.168.250.1', adapter: 2, netmask: "255.255.255.252", virtualbox__intnet: "router-net2"},
+                    {ip: '192.168.50.32', adapter: 8}
+                ],
+  },
+  :centralRouter => {
+        :box_name => "debian/bullseye64",
+        :net => [
+                    {ip: '192.168.255.2', adapter: 2, netmask: "255.255.255.252", gateway: "192.168.255.1", virtualbox__intnet: "router-net"},
+                    {ip: '192.168.250.2', adapter: 3, netmask: "255.255.255.252", virtualbox__intnet: "router-net2"},
+                    {ip: '192.168.0.1', adapter: 4, netmask: "255.255.255.252", virtualbox__intnet: "central-net"},
+                    {ip: '192.168.50.33', adapter: 8}
+                ]
+  },
+  :centralServer => {
+        :box_name => "debian/bullseye64",
+        :net => [
+                    {ip: '192.168.0.2', adapter: 2, netmask: "255.255.255.252", gateway: "192.168.0.1", virtualbox__intnet: "central-net"},
+                    {ip: '192.168.50.34', adapter: 8}
+                ]
+  },
+}
+
+Vagrant.configure("2") do |config|
+
+  MACHINES.each do |boxname, boxconfig|
+
+    config.vm.define boxname do |box|
+        box.vm.box = boxconfig[:box_name]
+        box.vm.host_name = boxname.to_s
+
+        boxconfig[:net].each do |ipconf|
+          box.vm.network "private_network", ip: ipconf[:ip], adapter: ipconf[:adapter], netmask: ipconf[:netmask], 
+virtualbox__intnet: ipconf[:virtualbox__intnet]
+        end
+        
+        if boxconfig.key?(:public)
+          box.vm.network "public_network", boxconfig[:public]
+        end
+        
+
+        config.vm.provision "shell" do |s|
+            ssh_pub_key = File.readlines("#{Dir.home}/.ssh/id_rsa.pub").first.strip
+            s.inline = <<-SHELL
+                echo #{ssh_pub_key} >> /home/vagrant/.ssh/authorized_keys
+#                echo #{ssh_pub_key} >> /root/.ssh/authorized_keys
+            SHELL
+        end
+
+        if boxname.to_s == "inetRouter2"
+          box.vm.network "forwarded_port", guest: 8080, guest_ip: "192.168.250.1", host: 9090, host_ip: "127.0.0.1",  protocol: "tcp"
+        end
+        
+        case boxname.to_s
+        when "centralServer"
+          box.vm.provision "ansible" do |ansible|
+            ansible.playbook = "./playbook/infrastructure.yaml"
+            ansible.inventory_path = "./playbook/inventory/prod.yaml"
+            ansible.host_key_checking = "false"
+            ansible.limit = "all"
+            ansible.raw_arguments  = [
+                  "--connection=paramiko"
+            ]
+              end
+          end
+        #end
+      end
+  end   
+end
+
