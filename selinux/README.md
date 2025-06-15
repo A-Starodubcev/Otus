@@ -203,7 +203,7 @@ ns01.dns.lab.		3600	IN	A	192.168.50.10
 
 ;; Query time: 1 msec
 ;; SERVER: 192.168.50.10#53(192.168.50.10)
-;; WHEN: Jun 14 18:33:07 UTC 2022
+;; WHEN: Jun 14 18:33:07 UTC 2025
 ;; MSG SIZE  rcvd: 96
 
 ```
