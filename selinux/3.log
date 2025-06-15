@@ -1,0 +1,12 @@
+Log created: 2025-06-14T19:30:36.468086000Z
+Process ID:  4478 (0x117e)
+Parent PID:  1 (0x1)
+Executable:  /usr/lib/virtualbox/VBoxHeadless
+Arg[0]: /usr/lib/virtualbox/VBoxHeadless
+Arg[1]: --comment
+Arg[2]: selinux_dns_problems_ns01_1660155790184_98906
+Arg[3]: --startvm
+Arg[4]: aa903660-3c71-4f2a-a590-35b889728862
+Arg[5]: --vrde
+Arg[6]: config
+AddRef: illegal refcnt=3221225469 state=2

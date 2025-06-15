@@ -1,0 +1,12 @@
+Log created: 2025-06-14T19:30:36.447136000Z
+Process ID:  2289 (0x8f1)
+Parent PID:  1 (0x1)
+Executable:  /usr/lib/virtualbox/VBoxHeadless
+Arg[0]: /usr/lib/virtualbox/VBoxHeadless
+Arg[1]: --comment
+Arg[2]: 12_selinux_1660149797734_67475
+Arg[3]: --startvm
+Arg[4]: f5ea057c-5d21-4074-b543-0ba98bb24af8
+Arg[5]: --vrde
+Arg[6]: config
+AddRef: illegal refcnt=3221225469 state=2

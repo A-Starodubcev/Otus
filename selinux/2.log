@@ -1,0 +1,12 @@
+Log created: 2025-06-14T19:30:36.456633000Z
+Process ID:  5873 (0x16f1)
+Parent PID:  1 (0x1)
+Executable:  /usr/lib/virtualbox/VBoxHeadless
+Arg[0]: /usr/lib/virtualbox/VBoxHeadless
+Arg[1]: --comment
+Arg[2]: selinux_dns_problems_client_1660155908379_90902
+Arg[3]: --startvm
+Arg[4]: e255aa36-744a-416e-a4e9-c200b31c4832
+Arg[5]: --vrde
+Arg[6]: config
+AddRef: illegal refcnt=3221225469 state=2
