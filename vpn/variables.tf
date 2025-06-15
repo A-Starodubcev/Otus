@@ -1,7 +1,6 @@
 variable "source_image" {
   type        = string
-  #default     = "https://cloud.debian.org/images/cloud/bullseye/latest/debian-11-generic-amd64.qcow2"
-  default     = "/home/rod/Qemu/libvirt_pool/debian-12-generic-amd64.qcow2"
+  default     = "/home/q/libvirt_pool/jammy-server-cloudimg-amd64.img"
 }
 
 variable "default_ttl" {
@@ -9,4 +8,3 @@ variable "default_ttl" {
   type        = string
   default     = 3600
 }
-

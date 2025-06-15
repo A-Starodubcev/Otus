@@ -1,0 +1,59 @@
+- name: Confugure servers
+  hosts: all
+  become: yes
+  tasks:
+    - name: install tools
+      apt:
+        name:
+          - openvpn
+          - selinux-utils
+          - iperf3
+        state: present
+        update_cache: true
+
+    - name: Create key 
+      template:
+        src: static.key
+        dest: /etc/openvpn/static.key
+        mode: 0644
+
+- name: Configure server        
+  hosts: server
+  become: yes
+  tasks:
+    - name: Create server.conf
+      template:
+        src: server.conf
+        dest: /etc/openvpn/server.conf
+        mode: 0644
+
+    - name: Create openvpn unit
+      template:
+        src: openvpn@.service
+        dest: /etc/systemd/system/openvpn@.service
+        
+    - name: start openvpn
+      service:
+        name: openvpn@server
+        state: started
+        enabled: true
+        
+- name: Configure client        
+  hosts: client
+  become: yes
+  tasks:
+    - name: Create server.conf
+      template:
+        src: client.conf
+        dest: /etc/openvpn/server.conf
+
+    - name: Create openvpn unit
+      template:
+        src: openvpn@.service
+        dest: /etc/systemd/system/openvpn@.service
+        
+    - name: start openvpn
+      service:
+        name: openvpn@server
+        state: started
+        enabled: true
