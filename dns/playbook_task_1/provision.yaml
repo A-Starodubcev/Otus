@@ -1,0 +1,144 @@
+- name: Confugure servers
+  hosts: all
+  become: yes
+  tasks:
+    - name: install tools
+      apt:
+        name:
+          - bind9
+          - bind9utils
+          - dnsutils
+          - ntp
+        state: present
+        update_cache: true
+
+    - name: Ensure group "named" exists
+      group:
+        name: named
+        state: present
+
+    - name: copy transferkey to all servers and the client
+      copy:
+        src: named.zonetransfer.key 
+        dest: /etc/named.zonetransfer.key
+        owner: root
+        group: named
+        mode: 0644
+
+#Настройка хоста ns01
+- hosts: ns01
+  become: yes
+  tasks:
+  #Копирование конфигурации DNS-сервера
+  - name: copy named.conf
+    copy:
+      src: master-named.conf
+      dest: /etc/named.conf
+      owner: root
+      group: named
+      mode: 0640
+
+#Копирование файлов с настроками зоны. 
+#Будут скопированы все файлы, в имя которых начинается на «named.d»
+  - name: copy zones
+    copy: 
+      src: '{{ item }}'
+      dest: /etc/named/
+      owner: root
+      group: named
+      mode: 0660
+    loop:
+      - named.ddns.lab
+      - named.dns.lab
+      - named.dns.lab.rev
+#      - named.dns.lab.client
+      - named.newdns.lab
+
+
+#Копирование файла resolv.conf
+  - name: copy resolv.conf to the servers
+    template: 
+      src: servers-resolv.conf.j2
+      dest: /etc/resolv.conf
+      owner: root
+      group: root 
+      mode: 0644
+
+#Изменение прав каталога /etc/named
+  - name: set /etc/named permissions
+    file:
+      path: /etc/named
+      owner: root
+      group: named 
+      mode: 0670
+
+
+#Перезапуск службы Named и добавление её в автозагрузку
+  - name: ensure named is running and enabled
+    service: 
+      name: named
+      state: restarted
+      enabled: true
+
+- hosts: ns02
+  become: yes
+  tasks:
+  - name: copy named.conf
+    copy:
+      src: slave-named.conf
+      dest: /etc/named.conf
+      owner: root
+      group: named
+      mode: 0640
+
+  - name: copy resolv.conf to the servers
+    template: 
+      src: servers-resolv.conf.j2 
+      dest: /etc/resolv.conf
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: set /etc/named permissions
+    file:
+      path: /etc/named
+      state: directory
+      owner: root
+      group: named
+      mode: 0670
+
+  - name: ensure named is running and enabled
+    service: 
+      name: named
+      state: restarted
+      enabled: yes
+   
+
+- hosts: client, client2
+  become: yes
+  tasks:
+  - name: copy resolv.conf to the client
+    copy: 
+      src: client-resolv.conf
+      dest: /etc/resolv.conf
+      owner: root
+      group: root
+      mode: 0644
+
+#Копирование конфигруационного файла rndc
+  - name: copy rndc conf file
+    copy: 
+      src: rndc.conf
+      dest: /root/rndc.conf
+      owner: root 
+      group: root
+      mode: 0644
+
+#Настройка сообщения при входе на сервер
+  - name: copy motd to the client
+    copy: 
+      src: client-motd
+      dest: /etc/motd
+      owner: root
+      group: root
+      mode: 0644
